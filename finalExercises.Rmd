@@ -1,0 +1,83 @@
+---
+title: "Day4 final exercise solutions"
+author: "Michael Levy"
+date: "September 17, 2015"
+output: html_document
+---
+
+* Download the quarterly presidential approval ratings dataset from SmartSite. Load and inspect it, making any necessary changes.
+```{r, message=FALSE}
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(stargazer)
+setwd('~/Dropbox/Teaching/RBootcamp/Day4/')
+d = readRDS('data/pres.RDS')
+head(d)
+d$year = rownames(d)
+```
+
+* Is it tidy? If not, tidy it.
+```{r}
+d = gather(d, quarter, approval, Q1:Q4)
+head(d)
+```
+
+* Graphically explore these questions to develop a testable hypothesis:
+    + Do the presidents differ in their approval ratings?
+```{r}
+ggplot(d, 
+       aes(x = reorder(president, approval, median, na.rm = TRUE), 
+           y = approval)) +
+    geom_boxplot()
+```
+
+Sure looks like it. At least one does!
+
+    + Do approval ratings vary over time?
+```{r}
+d$year = as.integer(d$year)
+ggplot(d, aes(x = year, y = approval)) + 
+    geom_point() + 
+    geom_smooth()
+```
+
+Hmm... something happens in the mid-60s after which approval ratings fall off.
+
+    + Is there a seasonal effect of quarter on approval ratings?
+```{r}
+ggplot(d, aes(x = quarter, y = approval)) +
+    geom_boxplot()
+```
+
+Looks like people get grumpy in the winter and give lower approval ratings.
+
+* Test your hypothesis using a linear model.
+```{r}
+m = lm(approval ~ quarter, d)
+summary(m)
+```
+
+There is a massive effect of seasonality on approval ratings!
+
+* Summarize your findings with one table and one plot.
+```{r, results = 'asis'}
+# Note that this code chunk has the option `results = 'asis'`.
+stargazer(m, type = 'html', title  = 'Linear model of approval and seasonal quarters. Q1 (Jan. - Mar.) is the excuded class.')
+```
+```{r}
+meanAp = mean(d$approval, na.rm = TRUE)
+ggplot(d, aes(x = quarter, y = approval)) +
+    geom_boxplot() +
+    geom_hline(aes(yintercept = meanAp),
+               color = 'red',
+               linetype = 'dashed',
+               size = 1) +
+    geom_text(x = 4.45, y = meanAp, angle = 90,
+              hjust = -.1,
+              label = "Mean approval",
+              color = 'red') +
+    ylim(c(0, 100)) +
+    theme_bw(base_size = 18)
+```
+
