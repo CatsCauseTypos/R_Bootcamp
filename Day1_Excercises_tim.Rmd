@@ -1,0 +1,52 @@
+---
+title: "Day1_Excercises"
+author: "Timothy Butterfield"
+date: "September 14, 2015"
+output: html_document
+---
+Create a code chunk to load the ggplot2 package (via library(ggplot2)). Use the echo argument to the code chunk to avoid printing the output of this unexciting command. (Hint: this is quite similar to the eval argument that appears in the template document.)
+
+For all of the following exercises, write a brief description of what you intend to do, show the code used to do it and the output generated, and and write a brief description of your interpretation.
+
+
+
+```{r, echo=FALSE}
+
+library(ggplot2)
+```
+
+Evaluate the structure of the 'diamonds' data:
+```{r}
+str(diamonds)
+```
+
+Summarize the 'diamonds' data:
+```{r}
+summary(diamonds)
+```
+
+Display the first ten (5?) entries of the 'diamonds' data:
+```{r}
+head(diamonds)
+```
+
+Examine the distribution of diamond size (carat) via a histogram
+```{r, echo=FALSE}
+ggplot(diamonds, aes(x = carat)) +
+        geom_histogram(binwidth = .001)
+```
+
+It appears there are several qualities of diamond cut in this dataset (Can you tell how many from str(diamonds). Create a histogram and density curve to explore the distribution of sizes across the different cut qualities. You could separate cuts by color or fill or facet (or linetype, or ???).
+
+Which of the above plots would be more appropriate if we were interested in absolute quantity of diamonds of each cut, and which would be more appropriate if we were interested in the relative distribution of sizes within each cut? Why?
+
+Create a histogram to explore distribution of sizes x cut qualities:
+```{r, echo=FALSE}
+ggplot(diamonds, aes(x = carat, y = cut)) +
+        geom_histogram() #+
+        #facet_grid()
+
+
+ggplot(iris, aes(x = Sepal.Length, y = Petal.Length, color = Species)) +
+        geom_point() +
+        facet_grid(~ Species)

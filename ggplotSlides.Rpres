@@ -1,0 +1,165 @@
+Welcome to the R Bootcamp!
+========================================================
+author: R Bootcamp, Day 1
+date: September 14, 2015
+
+* Please take a red, yellow, and green sticky from the front table.
+* Open the "live script" page in your browser
+   + link emailed on Friday, or
+   + tinyurl.com/BootcampLiveScript
+
+Introductions
+================
+* Name, position, program/department
+* One thing you have made well  
+
+Introduce yourself to your Moore neighborhood!  
+![](https://upload.wikimedia.org/wikipedia/commons/a/a1/Von_neumann_neighborhood.svg)
+
+Why learn R?
+=================
+Why script?  
+* Power  
+* Flexibility  
+* Editability: Error fixing, tweaks  
+* Traceability: Return and know what was done  
+* Reproducability: Cornerstone of science  
+* Communication: No ambiguity  
+	+ Literate programming  
+
+***
+Why R?  
+* Free  
+* Opensource  
+* Designed for data and statistics  
+* Extensible: 7k+ packages on CRAN  
+* Huge user community
+
+Monday
+=============
+* Make beautiful and informative plots with `ggplot2`
+* Basics of data.frames
+* Taste of functions
+* Literate programming & R Markdown 
+* Afternoon: Plotting
+
+Tuesday
+=============
+* Powerful syntax for data manipulation: `dplyr`
+* Primary/common/useful R functions
+   + Arguments
+   + Functional programming
+   + Vectorization
+* Data organization: Tidy data with `tidyr`
+* Afternoon: Combine data manipulation and visualization
+
+Wednesday
+=============
+* Other data structures (lists)
+* Basic input/output
+* Writing your own functions & D.R.Y.
+   + Scoping
+   + Debugging
+* Computational workflow and organization
+* Afternoon: Analysis over multiple files, more manipulation and visualization!
+
+Thursday & Friday
+=================
+* You decide!
+   + More/review of Monday-Wednesday materials
+   + Statistical analysis
+   + Working with text
+   + Fundamentals: data types, memory use, environments
+   + Advanced i/o
+   + R and speed
+      + Profiling
+
+
+The importance of visualization (1/3)
+========================================================
+Consider these four datasets:
+```{r echo = FALSE}
+library(stargazer)
+library(ggplot2)
+library(cowplot)
+ans = list()
+anshack = list()
+mods = list()
+plots = list()
+for(i in 1:4) {
+  ans[[i]] = data.frame(x = anscombe[, i], y = anscombe[, i + 4])
+  mods[[i]] = lm(y ~ x, ans[[i]])
+  plots[[i]] = ggplot(ans[[i]], aes(x = x, y = y)) + geom_point(size = 3) + geom_smooth(method = 'lm') + xlim(c(4, 20))
+  anshack[[i]] = ans[[i]]
+  if(i < 4)
+     anshack[[i]] = cbind(anshack[[i]], . = "|")
+  }
+
+```
+
+
+```{r, echo = FALSE}
+do.call(cbind, anshack)
+   
+```
+
+The importance of visualization (2/3)
+========================================================
+
+```{r, echo = FALSE, results = 'asis'}
+stargazer(mods, type = 'html', dep.var.caption = "", digits = 2, omit.stat = c('n', 'adj.rsq'),  dep.var.labels.include = TRUE)
+
+```
+
+The importance of visualization (3/3)
+========================================================  
+```{r, echo = FALSE}
+plot_grid(plotlist = plots, rel_heights = .8)  
+```  
+
+Anscombe, 1973. Graphs in Statistical Analysis. *The American Statistician* 27(1): 17-21.
+
+Scatterplotting
+==================================
+* Examine the built-in dataset `iris` using the `str()` function.  
+* Make a scatterplot of iris petal length vs. width
+
+Plot *aes*thetics
+==================================
+Consider the plot call:
+```{r, eval = FALSE}
+ggplot(iris, aes(x = Petal.Width, y = Petal.Length)) +
+   geom_point() +
+   geom_rug(alpha = .3)
+```
+
+There are two ways to color by `species`.  
+- Implement them both. 
+- What is the difference? 
+- Which is preferable here?
+
+Plotting variance among groups
+====================
+In the `iris` data.frame, what is the relationship between `Petal.Length` and `Species`?  
+* Complete each of these by adding an appropriate `geom_` line:
+   + `ggplot(iris, aes(x = Species, y = Petal.Length))`  
+   + `ggplot(iris, aes(x = Petal.Length, color = Species))`
+   
+Facets
+=================
+How does the relationship between `Sepal.Length` and `Petal.Length` differ across `Species`?  
+* Create two scatterplots of `Sepal.Length` vs. `Petal.Length`:
+   1. Color the points by `Species`  
+   2. facet the plot by `Species`  
+* Which works better here?  
+* Take your prefered plot and add another layer to the plot to illustrate the relationship more explicitly with `geom_smooth`.  
+* You show that plot to your advisor who doesn't understand the squiggly lines and wants to see the fit of a linear regression to the data. Can you add an argument to `geom_smooth` to add a linear fit? (Hint: `"lm"` is used for a linear fit.)  
+
+RMarkdown
+================
+* Create a new RMarkdown document.
+* Save it to disk.
+* Knit the default document to HTML using ctrl/cmd-shift-k and examine the output
+* Edit the default document so that it provides: 
+    + some information about the `iris` data.frame, and
+    + one of your plots of the iris data including the code that generated it.

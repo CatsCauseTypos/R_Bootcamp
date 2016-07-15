@@ -1,0 +1,200 @@
+---
+title: "R_bootcamp_day2_exercises"
+author: "Donnelly West"
+date: "September 15, 2015"
+output: html_document
+---
+#loading data
+
+#check working directory
+getwd()
+
+#set / change working directory
+setwd("~/Desktop/R_bootcamp/")
+#remember:
+# setwd("/") takes you forward (use tab-complete)
+# setwd("..") takes you backward one folder
+
+flights = readRDS("flights.RDS")
+
+str(flights)
+
+(more info:http://stat-computing.org/dataexpo/2009/the-data.html)
+Get a sense for what the size of the data and what it represents using str, summary, and/or head: What spatial and temporal domain do they cover?
+
+range(flights$year)
+2012-2013
+
+range(flights$month)
+Jan-Dec
+
+1.How many flights are there in the dataset?
+```{r}
+nrow(flights)
+```
+
+2.Which airline has the most flights? The least?
+```{r}
+flights %>% 
+  count(carrier) %>% 
+  arrange(n) %>% 
+  slice(c(1, 16))
+
+```
+
+3. How many airlines fly from LAX to SFO?
+
+```{r}
+flights$origin
+
+CA = flights %>% 
+  group_by(carrier) %>% 
+  filter(origin == "LAX" & dest == "SFO") 
+#this works..
+length(unique(CA$carrier)) #if you're trying to use count in dplyr, it wants the data set separately count(CA, unique(carrier)) - but it still doesn't return the # of carriers, it just returns a neat list of the 6
+  
+```
+
+4. a.To what airports can you fly from Sacramento (SMF)?
+```{r}
+SMF = flights %>% 
+  filter(origin == "SMF") %>% 
+  group_by(dest) 
+
+print(unique(SMF$dest))
+#maybe
+```
+
+```{r}
+SMF2 = flights %>% 
+  select(origin, dest) %>% 
+  filter(origin == "SMF")
+  
+
+
+print(unique(SMF2$dest))
+#who knows, but we got the same answer
+```
+
+Michael's solution in class:
+```{r}
+flights %>% 
+  select(origin, dest) %>% 
+  filter(origin == "SMF") %>% 
+  count(dest) %>% 
+  as.data.frame()
+
+```
+
+b.Which of these represents the longest distance flight?
+```{r}
+flights %>% 
+  select(origin, dest, distance) %>% 
+  filter(origin == "SMF") %>% 
+  arrange(desc(distance)) %>% 
+  slice(1)
+```
+
+
+c.Plot the average time to each airport from SMF. Make sure the order of the destination airports makes the plot easy to read
+```{r}
+# flights %>% 
+#   select(origin, dest, air_time) %>% 
+#   filter(origin == "SMF") %>% 
+#   group_by(dest) %>%
+#   summarise(avgTime = mean(air_time)) #get a lot of NA values
+
+flights %>% 
+  select(origin, dest, air_time) %>% 
+  filter(origin == "SMF") %>% 
+  group_by(dest) %>%
+  summarise(avgTime = mean(air_time, na.rm=TRUE)) %>% 
+  ggplot(aes(x = reorder(dest, avgTime), y = avgTime))+
+  geom_point()+
+  theme(axis.text.x=element_text(angle=-45,hjust=0))+
+  ggtitle("Average Flight Times from Sacramento")+
+  ylab("Flight Times (mins)")+
+  xlab("Destination Airports")
+  
+head(flights)
+# 
+# 
+# 
+# # flights %>% 
+# #   select(origin, dest, air_time) %>% 
+# #   filter(origin == "SMF") %>% 
+# #   group_by(dest) %>%
+# #   summarise(avgTime = mean(.,air_time, na.rm=TRUE)) #worse
+# 
+# flights %>% 
+#   select(origin, dest, air_time) %>% 
+#   filter(origin == "SMF") %>% 
+#   group_by(dest) %>%
+#   summarise(avgTime = mean(air_time, na.omit=TRUE)) #same as first
+```
+
+5.a. Identify the ten busiest airports and five highest-volume airlines.
+```{r}
+# flights %>% 
+#   select(carrier, origin, dest) %>%
+#   group_by(carrier) %>% 
+#   arrange(origin) %>% 
+#   as.data.frame()
+#    
+#   arrange(desc(count(flights, origin))) #error: cannot handle. wow. never seen that before
+
+# airlines
+flights %>% 
+  count(carrier) %>% 
+  top_n(5,n) %>% 
+  arrange(-n)
+
+# airports
+flights %>% 
+  count(c(origin, dest)) %>% 
+  top_n(10,n) %>% 
+  arrange(-n)
+#can't do that either... but ONLY looking at origin OR dest seems limited. need to look at both???
+O = flights %>% 
+  count(origin) %>% 
+  top_n(20,n) %>% 
+  arrange(-n)
+
+D = flights %>% 
+  count(dest) %>% 
+  top_n(20,n) %>% 
+  arrange(-n)
+
+class(D)
+#how do i compare data frames?
+
+head(O)
+head(D)  
+#help from Moe
+dnew <- cbind(O, D)
+dnew
+# the top 20 are the same airports, so maybe my concern for dest/origin bias was dumb.
+#Moe's code:
+D1 <- D %>% 
+  select(., airport = dest, dests = n)
+O1 <- O %>% 
+  select(., airport = origin, origins = n )
+head(D1)
+head(O1)
+
+?merge
+
+together <- merge(D1, O1, by = 'airport')
+
+head(together)
+
+together %>% 
+  mutate(sum = dests + origins) %>% 
+  arrange(-sum) %>% 
+  top_n(10, n) #finally!
+
+```
+
+b.Among those, compute the number of flights each airline had at each origin airport.
+
+head(flights)

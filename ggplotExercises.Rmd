@@ -1,0 +1,161 @@
+---
+title: "R Bootcamp"
+author: "Day 1 Exercises — ggplot"
+date: "September 14, 2015"
+output: html_document
+---
+
+```{r, message = FALSE, echo = FALSE}
+library("knitr")
+# Set global options to not print answers
+opts_chunk$set(echo = FALSE, eval = FALSE)
+```
+
+Create a new RMarkdown document in RStudio (File -> New -> RMarkdown -> Document -> HTML)
+
+Create a code chunk to load the `ggplot2` package (via `library(ggplot2)`). Use the `echo` argument to the code chunk to avoid printing the output of this unexciting command. (Hint: this is quite similar to the `eval` argument that appears in the template document.)
+
+
+```{r, echo = FALSE}
+library(ggplot2)
+```
+
+For all of the following exercises, write a brief description of what you intend to do, show the code used to do it and the output generated, and and write a brief description of your interpretation. 
+
+There is a dataset on the price and attributes of diamonds that comes with the ggplot2 package. Examine the `diamonds` data.frame using `str`, `summary`, `head`, and/or `View`. What relationships might be worth exploring graphically?
+
+```{r}
+str(diamonds)
+```
+
+1. Examine the distribution of diamond size (`carat`) via
+    a. a histogram
+    b. density curve
+    
+Be sure to adjust the bin (via `binwidth`) or kernal (via `adjust`) to capture any interesting patterns.
+```{r}
+ggplot(diamonds, aes(x = carat)) +
+    geom_histogram(binwidth = .05)
+
+ggplot(diamonds, aes(x = carat)) +
+    geom_density(adjust = .1)
+```
+
+2.
+    a. It appears there are several qualities of diamond `cut` in this dataset (Can you tell how many from `str(diamonds)`. Create a histogram and density curve to explore the distribution of sizes across the different cut qualities. You could separate cuts by color or fill or facet (or `linetype`, or ???).
+
+```{r}
+ggplot(diamonds, aes(x = carat, fill = cut)) +
+    geom_histogram()
+    
+ggplot(diamonds, aes(x = carat, color = cut)) +
+    geom_density()
+    
+# Note that you can get rid of the line(s) across the bottom of density plot like so:
+# geom_line(stat = "density")
+
+## or ##
+ggplot(diamonds, aes(x = carat)) +
+    geom_density() +
+    facet_wrap(~cut)
+```
+
+    b. Which of the above plots would be more appropriate if we were interested in absolute quantity of diamonds of each cut, and which would be more appropriate if we were interested in the relative distribution of sizes within each cut? Why?
+
+```{r}
+# The density curves are better for relative comparisons because the area under each is normalized 
+# (so information about the number of diamonds within each cut-class is lost). 
+# The histograms retain this information and so are preferable for comparisons of total quantity within each cut-class.
+```
+
+3. Create a boxplot that compares the distribution of sizes within each `cut`.
+```{r}
+ggplot(diamonds, aes(x = cut, y = carat)) +
+    geom_boxplot()
+```
+
+4. Change the above plot to be a violin plot. Add a single line to facet the plots by both color and clarity. Don't worry about the legibility of the resulting plot.
+```{r}
+ggplot(diamonds, aes(x = cut, y = carat)) +
+    geom_violin() +
+    facet_grid(color ~ clarity)
+```
+
+5. Let's try to get all that information in a more comprehensible plot. Leave `carat` on the y-axis, and experiment with mapping `cut`, `clarity`, and `color` to x, color/fill, and facets to produce a reasonable plot. Use whichever of boxplots or violin plots is more legible.
+```{r}
+ggplot(diamonds, aes(x = color, y = carat)) +
+    geom_boxplot(aes(fill = cut)) +
+    facet_wrap(~clarity)
+```
+
+6.
+    a. Create a scatterplot of diamond price as a function of size.
+```{r}
+ggplot(diamonds, aes(x = carat, y = price)) +
+    geom_point()
+```
+  
+    b. There is a lot of overplotting there, so information is being lost. Adjust the alpha level of the points to fix this.
+```{r}
+ggplot(diamonds, aes(x = carat, y = price)) +
+    geom_point(alpha = .05)
+```
+  
+    c. Add marginal rug plots to provide information about the distribution of both variables. Consider adjusting the alpha level of the rug plots too.
+```{r}
+ggplot(diamonds, aes(x = carat, y = price)) +
+    geom_point(alpha = .05) +
+    geom_rug(alpha = .01)
+```  
+
+
+    d. Add a smoothing curve to plot. What do you think about the right side of the curve? Consider that and the marginal distributions of each variable. Should you transform either or both of the axes? Experiment.
+```{r}
+ggplot(diamonds, aes(x = carat, y = price)) +
+    geom_point(alpha = .05) +
+    geom_rug(alpha = .01) +
+    geom_smooth() +
+    scale_x_log10() +
+    scale_y_log10()
+```  
+  
+    e. An expert tells you that diamonds larger than 3 carats or smaller than 0.25 carats are outliers. Set the x-axis limits to exclude those outliers. Also, change the smoothing algorithm to a linear fit.
+```{r}
+ggplot(diamonds, aes(x = carat, y = price)) +
+    geom_point(alpha = .05) +
+    geom_rug(alpha = .01) +
+    geom_smooth(method = 'lm') +
+    scale_x_log10(limits = c(.25, 3)) +
+    # or xlim(c(.1, 3))
+    scale_y_log10()
+```
+  
+    f. The same expert tells you the relationship between price and size depends on the quality of the `cut`. Test her statement by coloring according to `cut`. Should the rugs be colored by cut? How about the fitted lines? Does her statement appear to be true?
+```{r}
+ggplot(diamonds, aes(x = carat, y = price)) +
+    geom_point(alpha = .05, aes(color = cut)) +
+    geom_rug(alpha = .01) +
+    geom_smooth(method = 'lm', aes(color = cut)) +
+    scale_x_log10(limits = c(.25, 3)) +
+    scale_y_log10()
+# Color gets lost in the rug plots, so they probably shouldn't be colored 
+# (but perhaps you can see patterns where I don't). 
+# The lines absolutely should be colored because we want to see if the slope 
+# 3of the lines are different for the various `cut`s.
+```
+  
+    g. Challenge question: Time to get the plot ready for publication! Replace the ugly gray background by using the `theme_bw`. Remove the rug plots and replace them with log-tick marks if either variable is log-transformed. Change the axis labels to variable (unit). Reverse the order of the legend entries so that they are in the same order as the lines in the plot, change the legend title to "Cut quality", and move the legend to the empty space in the upper-left part of the graph. The "R Cookbook" <http://www.cookbook-r.com/Graphs/> may be helpful here; ggplot Google queries often lead to it.
+```{r}
+ggplot(diamonds, aes(x = carat, y = price)) +
+    geom_point(alpha = .05, aes(color = cut)) +
+    geom_smooth(method = 'lm', aes(color = cut)) +
+    scale_x_log10(name = "Size (carat)", limits = c(.25, 3), breaks = c(.5, 1, 2, 3)) +
+    scale_y_log10(name = "Price (USD)") +
+    annotation_logticks() +
+    scale_color_discrete(guide = guide_legend(title = "Cut quality", reverse = TRUE)) +
+    theme_bw() +
+    theme(legend.position = c(0.1, 1),
+          legend.justification = c(0, 1))
+```
+
+7. There are several other variables in the `diamonds` dataset. Explore their distributions, marginal distributions, relationships with each other, and effects on the relationship between price and size. More information on the dataset is available via `?diamonds`. Consider mapping variables to color/fill, shape/linetype, axes, facets, etc.

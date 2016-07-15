@@ -1,0 +1,184 @@
+---
+title: "Day2"
+author: "Donnelly West"
+date: "September 15, 2015"
+output: html_document
+---
+
+```{r}
+summary(cars)
+```
+
+#You can also embed plots, for example:
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+```{r, echo=FALSE}
+str(mtcars)
+```
+#prints all values for this column
+mtcars$mpg
+#tells you what R thinks the data type is
+class(mtcars$wt)
+#more info - mine looks different than his..
+is(mtcars$wt)
+
+#square bracet subsetting
+head(mtcars)
+#give me first row, first column 
+
+mtcars[1,1] #it just says "21"?
+
+#get row names
+carRownames= rownames(mtcars)
+#what class did it make it?
+class(carRownames)
+#pull first car row name
+carRownames[1]
+#last row name
+#can count
+carRownames[32]
+#or can be clever
+carRownames[length(carRownames)]
+#tada
+
+#Create a column on mtcars called "carname" from the rowname
+
+#pull a column out = mtcars$wt, same principle to add a column
+head(mtcars)
+mtcars$carName = rownames(mtcars)
+head(mtcars)
+
+#functional programming - things don't change when you do a function to them, only when you assign a variable to it. you have to use an '=' or nothing will change.
+
+#renaming columns
+# This extracts the last column name
+colnames(mtcars)[length(colnames(mtcars))]
+
+colnames(mtcars)[length(colnames(mtcars))] = "theCarName"
+colnames(mtcars)
+
+
+#quiz: what does [3,2] return on mtcars?
+mtcars[3,2]
+
+#vectorization -> the unit of analysis is never A number, it's a vector or string of numbers. the order is preserved. demonstration w/ independent vectors
+
+x = c(4,7,11)
+#so x is a numeric vector, length 3
+
+y= 1:3 #colon is inclusive
+
+#x + y
+x+y
+
+x+1 #will add 1 to each value of x
+#what if you only want to add 1 to the first?
+x[1]+1
+
+?seq()
+#so if you type seq(,5,3) it will use 'from = 1' by default
+4:12
+seq(from=4, to=12, by=4)
+
+#or it will calculate the gap
+seq(from=4, to=12, length.out=3) #so will pick first, last, and exact middle
+
+#equivalent to seq(... by =)
+seq(4,12,4)
+
+#pop quiz
+seq(to=12, length.out=3)
+seq(from=1,to=12,length.out=3)
+seq(to=12, by=1, length.out=3)
+#Michael: it doesn't matter; I don't know what it's doing. the point is you should name your arguements!
+#but what's happening is that by=default >> from = default
+
+#random # generator
+?sample
+sample(1:10, 1)
+#is it really random?
+sample(1:34694570, 5)
+
+#looks like it
+
+#default state is "replace=false" so you'll never pull the same # twice
+
+#have your 10 samples randomly assorted:
+sample(1:10,10)
+#doesn't just work with numbers...
+
+letters
+sample(letters,3)
+#all
+sample(letters,length(letters))
+
+#for reproducibility, you can set your seed
+set.seed(95616)
+
+#does R studio reset the seed upon close/open? yes!
+
+#for decimales random uniform
+runif(1, min=0, max = 1)
+
+#random number from normal distribution
+Mynorm = rnorm(1e6)
+#1e6 is 1x10^6, default = mean=0, stdev =1
+#plot the density quickly using R graphics
+plot(density(Mynorm))
+
+#add a column to data.frame
+#p2w (power to weight)
+#try to get R to tell you the name of the car with the highest p2wt ratio
+
+head(mtcars)
+
+mtcars$p2w = (mtcars$hp/mtcars$wt)
+head(mtcars) #victory
+
+
+?max #for just value
+max(mtcars$p2w)
+
+?which #nope
+mtcars[max(mtcars$p2w, na.rm=TRUE),] #nope; dunno why though
+
+which.max(mtcars$p2w) #tells you the # of the car = 31
+#use that info to pull the name
+mtcars$carName[which.max(mtcars$p2w)] #works
+
+
+#pull out the row with the highest p2w
+mtcars[mtcars$p2w == max(mtcars$p2w), ] #works
+
+#Michael's version:
+mtcars[which.max(mtcars$p2w), c("carName","p2w")]
+
+#is there a way to know the # of the columns without looking at str??
+colnames(mtcars) #gives ALL column names
+colnames(mtcars) == "hp" #asking it to find the one that matches hp
+which(colnames(mtcars) == "hp") # then 'which one matches' = 4
+
+#want to know total # rows/columns?
+dim(mtcars)
+
+nrow(mtcars)
+ncol(mtcars)
+
+#adding a column T/F if weight >3
+mtcars$bigCar = ifelse(mtcars$wt>3, TRUE, FALSE)
+head(mtcars)
+
+#Data types:
+class(mtcars$wt)
+#numeric
+class(mtcars$bigCar)
+#logical -most basic variable type
+
+#Coersion happens (T/F is be default 1/0 in most programming languages)
+as.numeric(mtcars$bigCar)
+
+#Data types:
+#logicals = TRUE or FALSE (TRUE != True, true ; TRUE= T)
